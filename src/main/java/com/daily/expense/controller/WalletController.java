@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.daily.expense.model.Wallet;
 import com.daily.expense.repository.UserRepository;
+import com.daily.expense.service.TransactionService;
 import com.daily.expense.service.WalletService;
 
 @Controller
@@ -20,14 +21,14 @@ public class WalletController {
     private WalletService walletService;
 
     @Autowired
-    private UserRepository userRepository;
+    private TransactionService transactionService;
 
     @GetMapping("/{userId}")
     public String viewWallet(@PathVariable Long userId, Model model) {
         List<Wallet> transactions = walletService.getActiveWalletsByUserId(userId);
-        Double totalAmount = walletService.getTotalAmount(userId);
+        Double finalAmount = transactionService.getFinalWalletAmount(userId);
         model.addAttribute("transactions", transactions);
-        model.addAttribute("totalAmount", totalAmount);
+        model.addAttribute("totalAmount", finalAmount);
         model.addAttribute("userId", userId);
         return "wallet";
     }

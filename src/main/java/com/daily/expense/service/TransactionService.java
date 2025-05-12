@@ -14,6 +14,8 @@ public class TransactionService {
 	@Autowired
 	private TransactionRepository transactionRepository;
 	
+	@Autowired
+	private ExpenseService expenseService;
 	public Map<String, Double> getUserTransactionSummary(Long userId) {
 	    Double totalSend = transactionRepository.getTotalSend(userId);
 	    Double totalReceive = transactionRepository.getTotalReceive(userId);
@@ -31,5 +33,28 @@ public class TransactionService {
 
 	    return data;
 	}
+	
+	@Autowired
+    private WalletService walletService;
+
+	public Double getFinalWalletAmount(Long userId) {
+	    Double topUp = walletService.getTotalAmount(userId); // From Wallet table
+	    Double receive = transactionRepository.getTotalReceive(userId);
+	    Double loan = transactionRepository.getTotalLoan(userId);
+	    Double send = transactionRepository.getTotalSend(userId);
+	    Double loanPaid = transactionRepository.getTotalLoanPaid(userId);
+	    Double expenseAmount = expenseService.getTotalExpenseAmount(userId);
+
+	    // Handle nulls
+	    topUp = topUp != null ? topUp : 0.0;
+	    receive = receive != null ? receive : 0.0;
+	    loan = loan != null ? loan : 0.0;
+	    send = send != null ? send : 0.0;
+	    loanPaid = loanPaid != null ? loanPaid : 0.0;
+	    expenseAmount = expenseAmount != null ? expenseAmount : 0.0;
+
+	    return topUp + receive + loan - send - loanPaid - expenseAmount;
+	}
+
 
 }

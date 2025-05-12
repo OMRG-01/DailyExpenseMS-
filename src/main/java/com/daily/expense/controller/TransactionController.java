@@ -66,7 +66,7 @@ public class TransactionController {
         Transaction txn = new Transaction(user, friend, amount, txnType, note);
         transactionRepository.save(txn);
 
-        return "redirect:/transaction?userId=" + userId;
+        return "redirect:/transaction/" + userId;
     }
 
 

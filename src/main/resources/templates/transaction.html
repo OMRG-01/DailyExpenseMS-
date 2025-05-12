@@ -2,53 +2,524 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Transaction</title>
-	<link rel="icon" type="image/png" th:href="@{/coin.png}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction | Expense Manager</title>
+    <link rel="icon" type="image/png" th:href="@{/coin.png}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #f97316;
+            --success: #10b981;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --border-radius: 0.5rem;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f1f5f9;
+            color: var(--dark);
+            padding-bottom: 2rem;
+        }
+        
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+        }
+        
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .send-bg { background-color: var(--primary); }
+        .receive-bg { background-color: var(--success); }
+        .loan-bg { background-color: var(--secondary); }
+        .loan-paid-bg { background-color: #8b5cf6; }
+        
+        .stat-info .amount {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-info .label {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+        }
+        
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .transaction-table {
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .transaction-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .transaction-badge {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+            font-weight: 600;
+            text-transform: uppercase;
+            border-radius: 9999px;
+        }
+        
+        .badge-send {
+            background-color: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+        
+        .badge-receive {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .badge-loan {
+            background-color: rgba(249, 115, 22, 0.1);
+            color: var(--secondary);
+        }
+        
+        .badge-loanpaid {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+        
+        .type-select {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        
+        .type-option {
+            flex: 1;
+            min-width: 120px;
+            position: relative;
+        }
+        
+        .type-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .type-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .type-option input[type="radio"]:checked + label {
+            border-color: var(--primary);
+            background-color: rgba(99, 102, 241, 0.05);
+        }
+        
+        .type-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        
+        @media (max-width: 767.98px) {
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .type-option {
+                min-width: 100px;
+            }
+            
+            .responsive-table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-	<h3>Transaction Summary</h3>
-	<ul>
-	    <li><b>Total Sending Amount:</b> <span th:text="${summary.totalSend}">0.0</span></li>
-	    <li><b>Total Receive Amount:</b> <span th:text="${summary.totalReceive}">0.0</span></li>
-	    <li><b>Total Receiving Balance:</b> <span th:text="${summary.totalSendBalance}">0.0</span></li>
-	    <li><b>Total Loan:</b> <span th:text="${summary.totalLoan}">0.0</span></li>
-	    <li><b>Balance Loan To Pay:</b> <span th:text="${summary.loanBalance}">0.0</span></li>
-	    <li><b>Total Loan Paid:</b> <span th:text="${summary.totalLoanPaid}">0.0</span></li>
-	</ul>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-wallet me-2"></i>
+                Expense Manager
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/user/userDash}">
+                            <i class="fas fa-home me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="fas fa-exchange-alt me-1"></i> Transactions
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-	<hr>
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="dashboard-cards">
+            <div class="stat-card">
+                <div class="stat-icon send-bg">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="amount" th:text="${summary.totalSend}">0.0</div>
+                    <div class="label">Total Sent</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon receive-bg">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="amount" th:text="${summary.totalReceive}">0.0</div>
+                    <div class="label">Total Received</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon loan-bg">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="amount" th:text="${summary.totalLoan}">0.0</div>
+                    <div class="label">Total Loans</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon loan-paid-bg">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="amount" th:text="${summary.totalLoanPaid}">0.0</div>
+                    <div class="label">Total Loan Paid</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon send-bg">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="amount" th:text="${summary.totalSendBalance}">0.0</div>
+                    <div class="label">Total Balance</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon loan-bg">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="amount" th:text="${summary.loanBalance}">0.0</div>
+                    <div class="label">Loan Balance to Pay</div>
+                </div>
+            </div>
+        </div>
 
-	<h4>Add Transaction</h4>
-	<form th:action="@{/transaction/add}" method="post">
-	    <input type="hidden" name="userId" th:value="${userId}" />
-	    <div class="form-group">
-	        <label>Friend</label>
-	        <select name="friendId" class="form-control" required>
-	            <option th:each="f : ${friends}" th:value="${f.id}" th:text="${f.name}">Friend Name</option>
-	        </select>
-	    </div>
-	    <div class="form-group">
-	        <label>Type</label>
-	        <select name="type" class="form-control" required>
-	            <option>SEND</option>
-	            <option>RECEIVE</option>
-	            <option>LOAN</option>
-	            <option>LOANPAID</option>
-	        </select>
-	    </div>
-	    <div class="form-group">
-	        <label>Amount</label>
-	        <input type="number" name="amount" class="form-control" step="0.01" required />
-	    </div>
-	    <div class="form-group">
-	        <label>Note</label>
-	        <input type="text" name="note" class="form-control" />
-	    </div>
-	    <button type="submit" class="btn btn-primary mt-2">Add Transaction</button>
-		<button class="btn btn-primary mt-3" style="color: aliceblue;"><a th:href="@{/user/userDash}" style="text-decoration: none;">Home</a></button>
-	</form>
+        <div class="row">
+            <!-- Add Transaction Form -->
+            <div class="col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-plus-circle me-2"></i> Add Transaction
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/transaction/add}" method="post">
+                            <input type="hidden" name="userId" th:value="${userId}" />
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Select Friend</label>
+                                <select name="friendId" class="form-select" required>
+                                    <option value="" selected disabled>Choose a friend</option>
+                                    <option th:each="f : ${friends}" th:value="${f.id}" th:text="${f.name}">Friend Name</option>
+                                </select>
+                            </div>
+                            
+                            <label class="form-label">Transaction Type</label>
+                            <div class="type-select">
+                                <div class="type-option">
+                                    <input type="radio" id="type-send" name="type" value="SEND" checked>
+                                    <label for="type-send">
+                                        <div class="type-icon send-bg">
+                                            <i class="fas fa-arrow-up"></i>
+                                        </div>
+                                        <span>Send</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="type-option">
+                                    <input type="radio" id="type-receive" name="type" value="RECEIVE">
+                                    <label for="type-receive">
+                                        <div class="type-icon receive-bg">
+                                            <i class="fas fa-arrow-down"></i>
+                                        </div>
+                                        <span>Receive</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="type-option">
+                                    <input type="radio" id="type-loan" name="type" value="LOAN">
+                                    <label for="type-loan">
+                                        <div class="type-icon loan-bg">
+                                            <i class="fas fa-hand-holding-usd"></i>
+                                        </div>
+                                        <span>Loan</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="type-option">
+                                    <input type="radio" id="type-loanpaid" name="type" value="LOANPAID">
+                                    <label for="type-loanpaid">
+                                        <div class="type-icon loan-paid-bg">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <span>Loan Paid</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="amount" class="form-control" step="0.01" required placeholder="0.00" />
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Note</label>
+                                <textarea name="note" class="form-control" rows="2" placeholder="Add a note about this transaction"></textarea>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus-circle me-2"></i> Add Transaction
+                                </button>
+                                <a th:href="@{/user/userDash}" class="btn btn-outline-primary">
+                                    <i class="fas fa-home me-2"></i> Back to Dashboard
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Transaction History Table -->
+            <div class="col-lg-8">
+				<div class="card">
+				            <div class="card-header">
+				                <i class="fas fa-chart-pie me-2"></i> Transaction Analytics
+				            </div>
+				            <div class="card-body">
+				                <div class="row">
+				                    <div class="col-md-6">
+				                        <canvas id="transactionTypeChart" width="400" height="300"></canvas>
+				                    </div>
+				                    <div class="col-md-6">
+				                        <canvas id="monthlyTrendsChart" width="400" height="300"></canvas>
+				                    </div>
+				                </div>
+				            </div>
+				        </div>
+            </div>
+        </div>
+    </div>
 
+    
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <script>
+        // Dummy data for charts - in real scenario, this would be populated from the backend
+        document.addEventListener('DOMContentLoaded', function() {
+            // Transaction Type Distribution Chart
+            const typeCtx = document.getElementById('transactionTypeChart').getContext('2d');
+            const typeChart = new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Send', 'Receive', 'Loan', 'Loan Paid'],
+                    datasets: [{
+                        data: [
+                            parseFloat(document.querySelector('.dashboard-cards .stat-card:nth-child(1) .amount').textContent) || 30,
+                            parseFloat(document.querySelector('.dashboard-cards .stat-card:nth-child(2) .amount').textContent) || 25,
+                            parseFloat(document.querySelector('.dashboard-cards .stat-card:nth-child(3) .amount').textContent) || 20,
+                            parseFloat(document.querySelector('.dashboard-cards .stat-card:nth-child(4) .amount').textContent) || 15
+                        ],
+                        backgroundColor: [
+                            '#6366f1',
+                            '#10b981',
+                            '#f97316',
+                            '#8b5cf6'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Transaction Distribution by Type',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+            
+            
+            // Search functionality
+            const searchInput = document.getElementById('searchTransaction');
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function() {
+                    const value = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('tbody tr');
+                    
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(value) ? '' : 'none';
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>

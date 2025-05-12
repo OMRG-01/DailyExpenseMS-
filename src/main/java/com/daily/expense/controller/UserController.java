@@ -9,13 +9,18 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.daily.expense.model.User;
 import com.daily.expense.model.Wallet;
 import com.daily.expense.repository.UserRepository;
+import com.daily.expense.service.CategoryService;
+import com.daily.expense.service.ExpenseService;
 import com.daily.expense.service.TransactionService;
 import com.daily.expense.service.UserService;
 import com.daily.expense.service.WalletService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpSession;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,6 +40,12 @@ public class UserController {
     
     @Autowired
     private TransactionService transactionService;
+    
+    @Autowired
+    private ExpenseService expenseService;
+
+    @Autowired
+    private CategoryService categoryService;
     // 1. Go to login page
     @GetMapping("/login")
     public String loginPage() {
@@ -61,13 +72,27 @@ public class UserController {
         User user = (User) session.getAttribute("loggedInUser");
         if (user != null) {
         	List<Wallet> transactions = walletService.getActiveWalletsByUserId(user.getId());
-            Double totalAmount = walletService.getTotalAmount(user.getId());
+        	 Double totalAmount = transactionService.getFinalWalletAmount(user.getId());
             Map<String, Double> summary = transactionService.getUserTransactionSummary(user.getId());
+            
+            
+            model.addAttribute("categories", categoryService.getAllCategories());
+            model.addAttribute("expenses", expenseService.getTodayExpenses(user.getId()));
             model.addAttribute("transactions", transactions);
             model.addAttribute("totalAmount", totalAmount);
             model.addAttribute("user", user);
             model.addAttribute("userId", user.getId());
             model.addAttribute("summary", summary);
+            model.addAttribute("todayExp", expenseService.getTodayExpenseAmount(user.getId()));
+            try {
+                List<Map<String, Object>> stats = expenseService.getCategoryExpenseStats(user.getId());
+                String statsJson = new ObjectMapper().writeValueAsString(stats);
+                model.addAttribute("categoryExpenseStatsJson", statsJson);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace(); // You can log this
+                model.addAttribute("categoryExpenseStatsJson", "[]"); // Fallback
+            }
+            
             return "userDash";
         } else {
             model.addAttribute("error", "Please login first.");
