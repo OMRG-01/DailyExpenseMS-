@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Transaction</title>
+	<link rel="icon" type="image/png" th:href="@{/coin.png}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+	<h3>Transaction Summary</h3>
+	<ul>
+	    <li><b>Total Sending Amount:</b> <span th:text="${summary.totalSend}">0.0</span></li>
+	    <li><b>Total Receive Amount:</b> <span th:text="${summary.totalReceive}">0.0</span></li>
+	    <li><b>Total Receiving Balance:</b> <span th:text="${summary.totalSendBalance}">0.0</span></li>
+	    <li><b>Total Loan:</b> <span th:text="${summary.totalLoan}">0.0</span></li>
+	    <li><b>Balance Loan To Pay:</b> <span th:text="${summary.loanBalance}">0.0</span></li>
+	    <li><b>Total Loan Paid:</b> <span th:text="${summary.totalLoanPaid}">0.0</span></li>
+	</ul>
+
+	<hr>
+
+	<h4>Add Transaction</h4>
+	<form th:action="@{/transaction/add}" method="post">
+	    <input type="hidden" name="userId" th:value="${userId}" />
+	    <div class="form-group">
+	        <label>Friend</label>
+	        <select name="friendId" class="form-control" required>
+	            <option th:each="f : ${friends}" th:value="${f.id}" th:text="${f.name}">Friend Name</option>
+	        </select>
+	    </div>
+	    <div class="form-group">
+	        <label>Type</label>
+	        <select name="type" class="form-control" required>
+	            <option>SEND</option>
+	            <option>RECEIVE</option>
+	            <option>LOAN</option>
+	            <option>LOANPAID</option>
+	        </select>
+	    </div>
+	    <div class="form-group">
+	        <label>Amount</label>
+	        <input type="number" name="amount" class="form-control" step="0.01" required />
+	    </div>
+	    <div class="form-group">
+	        <label>Note</label>
+	        <input type="text" name="note" class="form-control" />
+	    </div>
+	    <button type="submit" class="btn btn-primary mt-2">Add Transaction</button>
+		<button class="btn btn-primary mt-3" style="color: aliceblue;"><a th:href="@{/user/userDash}" style="text-decoration: none;">Home</a></button>
+	</form>
+
+
+</body>
+</html>

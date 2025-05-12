@@ -8,7 +8,7 @@ import java.time.LocalDate;
 public class Transaction {
 
     public enum Type {
-        SEND, RECEIVE, LOAN
+        SEND, RECEIVE, LOAN , LOANPAID
     }
 
     @Id

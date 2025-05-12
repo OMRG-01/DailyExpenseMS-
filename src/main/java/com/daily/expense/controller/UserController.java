@@ -7,12 +7,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.daily.expense.model.User;
+import com.daily.expense.model.Wallet;
 import com.daily.expense.repository.UserRepository;
+import com.daily.expense.service.TransactionService;
 import com.daily.expense.service.UserService;
+import com.daily.expense.service.WalletService;
 
 import jakarta.servlet.http.HttpSession;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -24,7 +29,12 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
+    
+    @Autowired
+    private WalletService walletService;
+    
+    @Autowired
+    private TransactionService transactionService;
     // 1. Go to login page
     @GetMapping("/login")
     public String loginPage() {
@@ -50,8 +60,14 @@ public class UserController {
     public String userDashboard(HttpSession session, Model model) {
         User user = (User) session.getAttribute("loggedInUser");
         if (user != null) {
+        	List<Wallet> transactions = walletService.getActiveWalletsByUserId(user.getId());
+            Double totalAmount = walletService.getTotalAmount(user.getId());
+            Map<String, Double> summary = transactionService.getUserTransactionSummary(user.getId());
+            model.addAttribute("transactions", transactions);
+            model.addAttribute("totalAmount", totalAmount);
             model.addAttribute("user", user);
             model.addAttribute("userId", user.getId());
+            model.addAttribute("summary", summary);
             return "userDash";
         } else {
             model.addAttribute("error", "Please login first.");
