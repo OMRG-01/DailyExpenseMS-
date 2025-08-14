@@ -47,10 +47,7 @@ public class UserController {
     @Autowired
     private CategoryService categoryService;
     // 1. Go to login page
-    @GetMapping("/login")
-    public String loginPage() {
-        return "login";
-    }
+  
 
     // 2. Handle login form
     @PostMapping("/login")
